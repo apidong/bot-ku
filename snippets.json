@@ -2,5 +2,10 @@
 	"CONSTRAINT `fk_id_modul` FOREIGN KEY (`id_modul`) REFERENCES `setting_modul` (`id`) ON DELETE CASCADE ON UPDATE CASCADE) - Invalid query",
 	"Invalid datetime format",
 	"log_bulanan' doesn't exist",
-	"Invalid query: ALTER TABLE user ADD UNIQUE email (`email`)"
+	"Invalid query: ALTER TABLE user ADD UNIQUE email (`email`)",
+	"log_login' doesn't exist",
+	"Unknown column 'pemohon' in 'log_surat'",
+	"There is no table with name \"alias_kodeisian\"",
+	"log_notifikasi_admin' doesn't exist",
+	" Column not found: 1054 Unknown column 'sumber_penduduk_berulang'"
 ]

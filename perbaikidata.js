@@ -49,6 +49,26 @@ async function cekLog(sourceCodePath, connection, version = 2212) {
                                         await perbaikiLogBulanan(connection); // fungsi eksternal
                                     }
 
+                                    if (firstLine.includes("log_login' doesn't exist")) {
+                                        await perbaikiLoglogin(connection); // fungsi eksternal
+                                    }
+
+                                    if (firstLine.includes("Unknown column 'pemohon' in 'log_surat'")) {
+                                        await perbaikiLogSurat(connection); // fungsi eksternal
+                                    }
+
+                                    if (firstLine.includes("There is no table with name \"alias_kodeisian\"")) {
+                                        await perbaikialiasKodeIsian(connection); // fungsi eksternal
+                                    }
+
+                                    if (firstLine.includes("log_notifikasi_admin' doesn't exist")) {
+                                        await perbaikialiasLogNotifikasiAdmin(connection); // fungsi eksternal
+                                    }
+
+                                    if (firstLine.includes("Unknown column 'sumber_penduduk_berulang'")) {
+                                        await perbaikialiasTwebSuratFormat(connection); // fungsi eksternal
+                                    }
+
                                     if (firstLine.includes("Invalid query: ALTER TABLE user ADD UNIQUE email (`email`)")) {
                                         await perbaikiuseremail(connection); // fungsi eksternal
                                     }
@@ -204,6 +224,92 @@ async function perbaikiuseremail(connection) {
         await connection.query(query2);
     });
 }
+
+async function perbaikiLoglogin(connection) {
+    const createlogLogin = `
+        CREATE TABLE IF NOT EXISTS \`log_login\` (
+        \`uuid\` char(36) NOT NULL,
+        \`config_id\` int NOT NULL,
+        \`username\` varchar(255) NOT NULL,
+        \`ip_address\` varchar(255) NOT NULL,
+        \`user_agent\` text NOT NULL,
+        \`referer\` varchar(255) NOT NULL,
+        \`lainnya\` varchar(255) DEFAULT NULL,
+        \`created_at\` timestamp NULL DEFAULT NULL,
+        \`updated_at\` timestamp NULL DEFAULT NULL,
+        PRIMARY KEY (\`uuid\`) USING BTREE,
+        UNIQUE INDEX \`log_login_uuid_config_id_unique\`(\`uuid\`, \`config_id\`) USING BTREE,
+        INDEX \`log_login_config_id_foreign\`(\`config_id\`) USING BTREE,
+        CONSTRAINT \`log_login_config_id_foreign\` FOREIGN KEY (\`config_id\`) REFERENCES \`config\` (\`id\`) ON DELETE CASCADE ON UPDATE CASCADE
+        );
+    `;
+
+    await connection.execute(createlogLogin);
+    console.log('tabel log_login berhasil dibuat');
+}
+
+async function perbaikialiasKodeIsian(connection) {
+    const createaliaskodeisian = `
+        CREATE TABLE IF NOT EXISTS \`alias_kodeisian\` (
+        \`id\` int UNSIGNED NOT NULL AUTO_INCREMENT,
+        \`config_id\` int NOT NULL,
+        \`judul\` varchar(20) NOT NULL,
+        \`alias\` varchar(50) NOT NULL,
+        \`content\` varchar(200) NOT NULL,
+        \`created_by\` int NULL DEFAULT NULL,
+        \`updated_by\` int NULL DEFAULT NULL,
+        \`created_at\` timestamp NULL DEFAULT NULL,
+        \`updated_at\` timestamp NULL DEFAULT NULL,
+        PRIMARY KEY (\`id\`) USING BTREE,
+        UNIQUE INDEX \`alias_kodeisian_config_id_judul_alias_unique\`(\`config_id\`, \`judul\`, \`alias\`) USING BTREE,
+        CONSTRAINT \`alias_kodeisian_config_fk\` FOREIGN KEY (\`config_id\`) REFERENCES \`config\` (\`id\`) ON DELETE CASCADE ON UPDATE CASCADE
+        );
+    `;
+
+    await connection.execute(createaliaskodeisian);
+    console.log('tabel  alias_kodeisian berhasil dibuat');
+}
+
+async function perbaikialiasLogNotifikasiAdmin(connection) {
+    const createaliaskodeisian = `
+        CREATE TABLE IF NOT EXISTS \`alias_kodeisian\` (
+        \`id\` int UNSIGNED NOT NULL AUTO_INCREMENT,
+        \`config_id\` int NOT NULL,
+        \`judul\` varchar(20) NOT NULL,
+        \`alias\` varchar(50) NOT NULL,
+        \`content\` varchar(200) NOT NULL,
+        \`created_by\` int NULL DEFAULT NULL,
+        \`updated_by\` int NULL DEFAULT NULL,
+        \`created_at\` timestamp NULL DEFAULT NULL,
+        \`updated_at\` timestamp NULL DEFAULT NULL,
+        PRIMARY KEY (\`id\`) USING BTREE,
+        UNIQUE INDEX \`alias_kodeisian_config_id_judul_alias_unique\`(\`config_id\`, \`judul\`, \`alias\`) USING BTREE,
+        CONSTRAINT \`alias_kodeisian_config_fk\` FOREIGN KEY (\`config_id\`) REFERENCES \`config\` (\`id\`) ON DELETE CASCADE ON UPDATE CASCADE
+        );
+    `;
+
+    await connection.execute(createaliaskodeisian);
+    console.log('tabel  alias_kodeisian berhasil dibuat');
+}
+
+async function perbaikiLogSurat(connection) {
+    const insertPemohon = `
+        ALTER TABLE \`log_surat\`
+        ADD COLUMN \`pemohon\` varchar(200) NULL DEFAULT NULL AFTER \`deleted_at\`;
+    `;
+    await connection.execute(insertPemohon);
+    console.log('kolom pemohon di tabel log_surat berhasil ditambahkan');
+}
+
+async function perbaikialiasTwebSuratFormat(connection) {
+    const sumber_penduduk_berulang = `
+         ALTER TABLE \`tweb_surat_format\`
+    ADD COLUMN \`sumber_penduduk_berulang\` tinyint(1) NULL DEFAULT 0 AFTER \`format_nomor_global\`;
+    `;
+    await connection.execute(sumber_penduduk_berulang);
+    console.log('kolom sumber_penduduk_berulang di tabel tweb_surat_format berhasil ditambahkan');
+}
+
 module.exports = {
     cekLog,
 };
